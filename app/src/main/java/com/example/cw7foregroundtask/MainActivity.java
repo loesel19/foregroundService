@@ -47,4 +47,9 @@ public class MainActivity extends AppCompatActivity {
         startForegroundService(i);
         Log.d(TAG,"Started");
     }
+    public void stopTimer(View v){
+        Intent i = new Intent(this, TimerService.class);
+        i.setAction("STOP_TIMER");
+        startForegroundService(i);
+    }
 }

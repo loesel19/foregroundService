@@ -23,6 +23,7 @@ public class TimerService extends Service {
     public final String CHANNEL_ID="Timer Channel";
     public final String TIMER_ACTION = "TIMER_UPDATE";
     int startTime;
+    boolean cancelTimer;
 
     public void onCreate(){
         super.onCreate();
@@ -41,12 +42,15 @@ public class TimerService extends Service {
         Log.d(TAG, "started command");
         Notification notification = buildNotification("Timer", "this is a simple countdown");
         startForeground(1,notification);
+        cancelTimer = false;
         if (intent.getAction() != null && intent.getAction().equals("START_TIMER")){
             startTime = intent.getIntExtra("Time",10);
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     for (int i = 0; i < startTime; i++){
+                        if (cancelTimer)
+                            break;
                         Notification n = buildNotification("Timer", startTime-i + "");
                         startForeground(1, n);
                         try {
@@ -62,7 +66,11 @@ public class TimerService extends Service {
 
             t.start();
         }
-        return super.onStartCommand(intent, flags, startId);
+        else{
+            cancelTimer = true;
+            stopSelf();
+        }
+        return START_NOT_STICKY;
     }
 
     public Notification buildNotification(String title, String content){
