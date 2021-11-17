@@ -15,6 +15,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class TimerService extends Service {
 
@@ -51,15 +52,28 @@ public class TimerService extends Service {
                     for (int i = 0; i < startTime; i++){
                         if (cancelTimer)
                             break;
-                        Notification n = buildNotification("Timer", startTime-i + "");
+                        Notification n;
+                        if (startTime - i < 10){
+                            n = buildNotification("Timer", "00:0" + (startTime-i) + "");
+                        }else
+                            n = buildNotification("Timer", "00:" + (startTime - i));
                         startForeground(1, n);
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                        Intent timeIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        timeIntent.setAction("Timer update");
+                        timeIntent.putExtra("time", startTime - i);
+                        timeIntent.putExtra("status", "run");
+                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(timeIntent);
                     }
                     Notification n = buildNotification("Timer", "Timer Finished!");
+                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                    i.setAction("Timer update");
+                    i.putExtra("status", "finished");
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(i);
                     startForeground(1, n);
                 }
             });
